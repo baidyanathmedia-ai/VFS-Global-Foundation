@@ -1,0 +1,51 @@
+{
+  "entities": {
+    "formSubmission": {
+      "title": "Form Submission",
+      "description": "Candidate application and registration documents for VFS Global Academy courses",
+      "type": "object",
+      "properties": {
+        "studentName": { "type": "string", "description": "Full name of the student" },
+        "fatherName": { "type": "string", "description": "Father's name" },
+        "mobileNumber": { "type": "string", "description": "Student mobile contact number" },
+        "emailAddress": { "type": "string", "description": "Email address" },
+        "dob": { "type": "string", "description": "Date of birth" },
+        "gender": { "type": "string", "description": "Gender" },
+        "address": { "type": "string", "description": "Residential address" },
+        "city": { "type": "string", "description": "City / Town" },
+        "district": { "type": "string", "description": "District" },
+        "state": { "type": "string", "description": "State" },
+        "highestQualification": { "type": "string", "description": "Academic qualification" },
+        "selectedCourse": { "type": "string", "description": "Selected course title" },
+        "aadharFileName": { "type": "string", "description": "Aadhaar file name" },
+        "aadharCardLink": { "type": "string", "description": "Aadhaar document data link or URL" },
+        "marksheetFileName": { "type": "string", "description": "Marksheet file name" },
+        "marksheetLink": { "type": "string", "description": "Marksheet document data link or URL" },
+        "referenceId": { "type": "string", "description": "Application reference number" },
+        "status": { "type": "string", "description": "Application status (e.g. submitted, under_review)" },
+        "submittedAt": { "type": "string", "description": "Timestamp of submission" }
+      },
+      "required": ["studentName", "mobileNumber", "selectedCourse"]
+    },
+    "newsletterSubscriber": {
+      "title": "Newsletter Subscriber",
+      "description": "Subscribers interested in course updates and alerts",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "description": "Subscriber email address" },
+        "subscribedAt": { "type": "string", "description": "Timestamp when subscribed" }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/formSubmissions/{submissionId}": {
+      "schema": "formSubmission",
+      "description": "Candidate registration submissions and uploaded documents"
+    },
+    "/newsletterSubscribers/{subscriberId}": {
+      "schema": "newsletterSubscriber",
+      "description": "Newsletter email subscriptions"
+    }
+  }
+}

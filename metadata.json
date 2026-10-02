@@ -1,0 +1,6 @@
+{
+  "name": "VFS Global Academy - STPI Deoghar",
+  "description": "Official portal for VFS Global Academy operated under VFS Global Foundation at STPI Deoghar (Jasidih), Jharkhand. Offering Certificate Courses in Travel & Hospitality Management and Language & Communication.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
