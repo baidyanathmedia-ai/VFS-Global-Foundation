@@ -1,4 +1,4 @@
-import { Course, GalleryItem, Testimonial, SuccessStory, ReelVideoItem, Notice, FAQItem, LeadershipProfile, FacultyProfile, TeachingApproachItem } from '../types';
+import { Course, GalleryItem, Testimonial, SuccessStory, BatchStudentAchievement, ReelVideoItem, Notice, FAQItem, LeadershipProfile, FacultyProfile, TeachingApproachItem } from '../types';
 import {
   academicWorkshopSeminar,
   auditoriumCeremonyEvent,
@@ -731,50 +731,144 @@ export const SUCCESS_STORIES_DATA: SuccessStory[] = [
 ];
 
 // ============================================================================
+// BATCH 7 — STUDENT ACHIEVEMENTS
+// ============================================================================
+export const BATCH_7_ACHIEVEMENTS_DATA: BatchStudentAchievement[] = [
+  {
+    id: "batch7-01",
+    name: "Nitish SHA",
+    role: "Founder",
+    organization: "Baidyanath Media Agency",
+    fullDesignation: "Founder — Baidyanath Media Agency",
+    batch: "Batch 7",
+    initials: "NS",
+    avatarBg: "from-blue-600 to-indigo-700",
+    domain: "Media & Agency"
+  },
+  {
+    id: "batch7-02",
+    name: "Sujeet Gupta",
+    role: "Founder",
+    organization: "Sakshi Trends",
+    fullDesignation: "Founder — Sakshi Trends",
+    batch: "Batch 7",
+    initials: "SG",
+    avatarBg: "from-emerald-600 to-teal-700",
+    domain: "Fashion & Retail"
+  },
+  {
+    id: "batch7-03",
+    name: "Abhimanyu Kumar",
+    role: "Founder",
+    organization: "Edu Care Jagat",
+    fullDesignation: "Founder — Edu Care Jagat",
+    batch: "Batch 7",
+    initials: "AK",
+    avatarBg: "from-amber-600 to-orange-700",
+    domain: "Education & Coaching"
+  },
+  {
+    id: "batch7-04",
+    name: "Megha Sahi",
+    role: "Mentor & Guide",
+    organization: "DIA IAS Academy",
+    fullDesignation: "Mentor & Guide — DIA IAS Academy",
+    batch: "Batch 7",
+    initials: "MS",
+    avatarBg: "from-purple-600 to-pink-700",
+    domain: "Civil Services Mentorship"
+  },
+  {
+    id: "batch7-05",
+    name: "Kaushal Singh",
+    role: "English Speaking Member",
+    organization: "US Consultation",
+    fullDesignation: "English Speaking Member — US Consultation",
+    batch: "Batch 7",
+    initials: "KS",
+    avatarBg: "from-cyan-600 to-blue-700",
+    domain: "Global Consultation"
+  },
+  {
+    id: "batch7-06",
+    name: "Aman Pathak",
+    role: "Managing Director",
+    organization: "Annapurna Sweets & Namkeen",
+    fullDesignation: "Managing Director — Annapurna Sweets & Namkeen",
+    batch: "Batch 7",
+    initials: "AP",
+    avatarBg: "from-rose-600 to-red-700",
+    domain: "Enterprise & Food Services"
+  },
+  {
+    id: "batch7-07",
+    name: "Kalyan Sharma",
+    role: "Fire Safety Officer",
+    organization: "AIIMS Deoghar",
+    fullDesignation: "Fire Safety Officer — AIIMS Deoghar",
+    batch: "Batch 7",
+    initials: "KS",
+    avatarBg: "from-orange-600 to-amber-700",
+    domain: "Public Safety & Healthcare"
+  },
+  {
+    id: "batch7-08",
+    name: "Aman Roy",
+    role: "Civil Engineer",
+    organization: "Internship Completed at AIIMS Deoghar",
+    fullDesignation: "Civil Engineer — Internship Completed at AIIMS Deoghar",
+    batch: "Batch 7",
+    initials: "AR",
+    avatarBg: "from-indigo-600 to-violet-700",
+    domain: "Civil Infrastructure"
+  }
+];
+
+// ============================================================================
 // VIDEO SHOWCASE REELS
 // ============================================================================
 export const REEL_VIDEOS_DATA: ReelVideoItem[] = [
   {
-    id: "reel-01",
-    cardNumber: "VIDEO 01",
-    title: "Instagram Reel",
-    titleHi: "इंस्टाग्राम रील",
-    subtitle: "Aviation & Hospitality Masterclass • Campus Highlight",
-    subtitleHi: "एविएशन व हॉस्पिटैलिटी मास्टरक्लास",
+    id: "fb-reel-01",
+    cardNumber: "Facebook Reel 01",
+    title: "Facebook Reel 01",
+    titleHi: "फेसबुक रील 01",
+    subtitle: "VFS Global Academy Deoghar • Campus Training & Career Readiness",
+    subtitleHi: "वीएफएस ग्लोबल अकादमी देवघर • परिसर प्रशिक्षण एवं करियर तैयारी",
+    platform: "facebook",
+    platformLabel: "Facebook Video",
+    url: "https://www.facebook.com/share/v/1Dw2fGvSim/",
+    embedUrl: "https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fshare%2Fv%2F1Dw2fGvSim%2F&show_text=0&autoplay=1",
+    thumbnail: vfsReceptionDeskStudents,
+    description: "Official Facebook video from VFS Global Academy, STPI Deoghar showcasing classroom learning, communication sessions, and student development.",
+    tags: ["#VFSGlobalAcademy", "#FacebookReel", "#STPIDeoghar", "#CareerTraining"],
+    stats: {
+      views: "24.2K",
+      likes: "1.1K",
+      shares: "285"
+    },
+    duration: "1:02"
+  },
+  {
+    id: "fb-reel-02",
+    cardNumber: "Facebook Reel 02",
+    title: "Facebook Reel 02",
+    titleHi: "फेसबुक रील 02",
+    subtitle: "Aviation & Hospitality Masterclass • Student Reel",
+    subtitleHi: "एविएशन व हॉस्पिटैलिटी मास्टरक्लास • छात्र रील",
     platform: "instagram",
-    platformLabel: "Instagram Reel",
+    platformLabel: "Official Reel",
     url: "https://www.instagram.com/reel/Dd9nQOaTRkG/?stkn=MWU2cXRwdHY1dDJ1dg==",
     embedUrl: "https://www.instagram.com/reel/Dd9nQOaTRkG/embed/",
     thumbnail: practicalMockPresentation,
-    description: "Official Instagram Reel featuring student mock interviews, executive grooming standards, and spoken English confidence coaching inside the STPI Deoghar smart training room.",
-    tags: ["#VFSGlobalAcademy", "#InstagramReel", "#AviationTraining", "#STPIDeoghar"],
+    description: "Official Reel featuring student mock interviews, executive grooming standards, and spoken English confidence coaching at STPI Deoghar.",
+    tags: ["#VFSGlobalAcademy", "#Reel02", "#AviationTraining", "#STPIDeoghar"],
     stats: {
       views: "18.4K",
       likes: "1.4K",
       shares: "320"
     },
     duration: "0:45"
-  },
-  {
-    id: "reel-04",
-    cardNumber: "VIDEO 02",
-    title: "Dedicated MP4 / Connected Video Reel",
-    titleHi: "समर्पित MP4 / कनेक्टेड वीडियो रील",
-    subtitle: "Upload or Connect Any MP4 Video File",
-    subtitleHi: "कोई भी MP4 वीडियो फाइल अपलोड या कनेक्ट करें",
-    platform: "mp4",
-    platformLabel: "MP4 Video Player",
-    url: "https://assets.mixkit.co/videos/preview/mixkit-modern-airport-terminal-with-passengers-walking-43306-large.mp4",
-    thumbnail: outdoorStudyVisit,
-    description: "Dedicated custom video card engineered to play local uploaded MP4 files or external CDN video URLs with HTML5 playback, loop, volume, and fullscreen controls.",
-    tags: ["#CustomVideo", "#MP4Upload", "#InteractivePlayer", "#AlumniReel"],
-    stats: {
-      views: "Active",
-      likes: "Uploadable",
-      shares: "HD 1080p"
-    },
-    duration: "Custom",
-    isUploadable: true
   }
 ];
 

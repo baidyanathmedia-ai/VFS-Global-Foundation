@@ -64,6 +64,19 @@ export interface SuccessStory {
   videoClip?: SuccessStoryVideoClip;
 }
 
+export interface BatchStudentAchievement {
+  id: string;
+  name: string;
+  role: string;
+  organization: string;
+  fullDesignation: string; // "Founder — Baidyanath Media Agency"
+  batch: string; // e.g. "Batch 7"
+  initials: string;
+  avatarUrl?: string;
+  avatarBg: string;
+  domain: string;
+}
+
 export interface ReelVideoItem {
   id: string;
   cardNumber: string; // e.g. "VIDEO 01", "VIDEO 02"

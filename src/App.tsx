@@ -10,7 +10,7 @@ import { AdmissionSection } from './components/AdmissionSection';
 import { GallerySection } from './components/GallerySection';
 import { LeadershipSection } from './components/LeadershipSection';
 import { TestimonialsSection } from './components/TestimonialsSection';
-import { SuccessStoriesSection } from './components/SuccessStoriesSection';
+import { BatchSevenAchievementsSection } from './components/BatchSevenAchievementsSection';
 import { VideoShowcaseSection } from './components/VideoShowcaseSection';
 import { NoticeBoard } from './components/NoticeBoard';
 import { ApplySection } from './components/ApplySection';
@@ -72,7 +72,7 @@ export default function App() {
         'gallery',
         'leadership',
         'testimonials',
-        'success-stories',
+        'batch-7',
         'video-showcase',
         'notices',
         'apply-now',
@@ -221,30 +221,30 @@ export default function App() {
           <TestimonialsSection />
         </SectionReveal>
 
-        {/* Divider 9: Testimonials to Success Stories */}
+        {/* Divider 9: Testimonials to Batch 7 Achievements */}
         <SectionDivider
-          id="divider-testimonials-success"
+          id="divider-testimonials-batch7"
           variant="diamond-crest"
-          accent="emerald"
-          icon={<Briefcase className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />}
-          badgeText="Alumni Career Outcomes"
+          accent="blue"
+          icon={<GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />}
+          badgeText="Batch 7 Achievements"
           className="bg-slate-50 dark:bg-slate-900/60"
         />
 
-        {/* 11. Alumni Success Stories & Case Studies */}
+        {/* 11. BATCH 7 — STUDENT ACHIEVEMENTS SECTION */}
         <SectionReveal>
-          <SuccessStoriesSection onOpenApply={handleOpenApply} />
+          <BatchSevenAchievementsSection onOpenApply={handleOpenApply} />
         </SectionReveal>
 
-        {/* Divider 10: Success Stories to Video Showcase */}
+        {/* Divider 10: Batch 7 to Video Showcase */}
         <SectionDivider
-          id="divider-success-videos"
+          id="divider-batch7-videos"
           variant="glow-line"
           accent="blue"
           className="bg-white dark:bg-slate-950"
         />
 
-        {/* VIDEO SHOWCASE SECTION: Watch Our Latest Videos (Reel-style carousel) */}
+        {/* VIDEO WATCH SECTION: Facebook Reel 01 & Facebook Reel 02 */}
         <SectionReveal>
           <VideoShowcaseSection onOpenApply={handleOpenApply} />
         </SectionReveal>

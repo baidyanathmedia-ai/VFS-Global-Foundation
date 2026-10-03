@@ -4,7 +4,6 @@ import {
   Pause, 
   Volume2, 
   VolumeX, 
-  Volume1,
   Maximize2, 
   Minimize2,
   X, 
@@ -15,16 +14,27 @@ import {
   CheckCircle2,
   Share2,
   Heart,
-  Radio,
-  Upload,
-  Link as LinkIcon,
-  RefreshCw,
-  Video
+  Radio
 } from 'lucide-react';
 import { REEL_VIDEOS_DATA } from '../data/academyData';
 import { ReelVideoItem } from '../types';
 import { useLanguage } from '../context/LanguageContext';
 import { useScrollAnimation } from '../hooks/useScrollAnimation';
+
+declare global {
+  interface Window {
+    FB?: {
+      init: (params: Record<string, unknown>) => void;
+      XFBML: {
+        parse: (element?: HTMLElement | null) => void;
+      };
+      Event: {
+        subscribe: (event: string, callback: (msg: any) => void) => void;
+      };
+    };
+    fbAsyncInit?: () => void;
+  }
+}
 
 interface VideoShowcaseSectionProps {
   onOpenApply?: () => void;
@@ -45,68 +55,85 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
   const [volume, setVolume] = useState<number>(85); // 0 to 100
   const [progress, setProgress] = useState<number>(0);
   const [currentTime, setCurrentTime] = useState<number>(0);
-  const [duration, setDuration] = useState<number>(62); // seconds estimate
+  const [duration, setDuration] = useState<number>(62);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
+  const [iframeKey, setIframeKey] = useState<number>(0);
+
   const modalContainerRef = useRef<HTMLDivElement>(null);
-  const modalVideoRef = useRef<HTMLVideoElement>(null);
+  const fbPlayerInstanceRef = useRef<any>(null);
 
   // Likes state per reel
   const [likedReels, setLikedReels] = useState<Record<string, boolean>>({});
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({
     'fb-reel-01': 1140,
-    'fb-reel-02': 1380,
-    'reel-01': 1420,
-    'reel-04': 418
+    'fb-reel-02': 1420
   });
 
   // Copied link toast notification
   const [copiedReelId, setCopiedReelId] = useState<string | null>(null);
 
-  // Custom MP4 state for VIDEO 04
-  const [customMp4Url, setCustomMp4Url] = useState<string>(
-    'https://assets.mixkit.co/videos/preview/mixkit-modern-airport-terminal-with-passengers-walking-43306-large.mp4'
-  );
-  const [customMp4FileName, setCustomMp4FileName] = useState<string>('sample-airport-operations.mp4');
-  const [urlInputVal, setUrlInputVal] = useState('');
-  const [showUrlInput, setShowUrlInput] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Filter tabs: Facebook Reels, Instagram Reel, All Videos
-  const [activeFilter, setActiveFilter] = useState<'all' | 'facebook' | 'instagram' | 'mp4'>('all');
+  // Filter tabs
+  const [activeFilter, setActiveFilter] = useState<'all' | 'reel-01' | 'reel-02'>('all');
 
   const filterTabs = [
-    { id: 'all', labelEn: `All Videos (${REEL_VIDEOS_DATA.length})`, labelHi: `सभी वीडियो (${REEL_VIDEOS_DATA.length})` },
-    ...(REEL_VIDEOS_DATA.some(v => v.platform === 'facebook') ? [{ id: 'facebook', labelEn: 'Facebook Reels', labelHi: 'फेसबुक रील्स' }] : []),
-    ...(REEL_VIDEOS_DATA.some(v => v.platform === 'instagram') ? [{ id: 'instagram', labelEn: 'Instagram Reel', labelHi: 'इंस्टाग्राम रील' }] : []),
-    ...(REEL_VIDEOS_DATA.some(v => v.platform === 'mp4') ? [{ id: 'mp4', labelEn: 'Uploadable MP4', labelHi: 'अपलोड करने योग्य MP4' }] : [])
+    { id: 'all', labelEn: `All Reels (${REEL_VIDEOS_DATA.length})`, labelHi: `सभी रील्स (${REEL_VIDEOS_DATA.length})` },
+    { id: 'reel-01', labelEn: 'Facebook Reel 01', labelHi: 'फेसबुक रील 01' },
+    { id: 'reel-02', labelEn: 'Facebook Reel 02', labelHi: 'फेसबुक रील 02' }
   ];
 
   const displayedVideos = REEL_VIDEOS_DATA.filter((item) => {
     if (activeFilter === 'all') return true;
-    if (activeFilter === 'facebook') return item.platform === 'facebook';
-    if (activeFilter === 'instagram') return item.platform === 'instagram';
-    if (activeFilter === 'mp4') return item.platform === 'mp4';
+    if (activeFilter === 'reel-01') return item.id === 'fb-reel-01';
+    if (activeFilter === 'reel-02') return item.id === 'fb-reel-02';
     return true;
   });
 
-  // Open modal handler (Stay on website!)
+  // Load Official Facebook JS SDK for supported XFBML video player integration
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!document.getElementById('facebook-jssdk')) {
+      window.fbAsyncInit = function () {
+        window.FB?.init({
+          xfbml: true,
+          version: 'v19.0'
+        });
+        window.FB?.Event?.subscribe('xfbml.ready', (msg: any) => {
+          if (msg.type === 'video' && msg.instance) {
+            fbPlayerInstanceRef.current = msg.instance;
+          }
+        });
+      };
+      const script = document.createElement('script');
+      script.id = 'facebook-jssdk';
+      script.src = 'https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v19.0';
+      script.async = true;
+      script.defer = true;
+      script.crossOrigin = 'anonymous';
+      document.body.appendChild(script);
+    }
+  }, []);
+
+  // Open modal handler (Keeps visitor 100% on the VFS Global Academy website)
   const handleOpenModal = (video: ReelVideoItem) => {
+    fbPlayerInstanceRef.current = null;
     setModalVideo(video);
     setIsPlaying(true);
     setProgress(0);
     setCurrentTime(0);
-    setDuration(video.duration === '1:30' ? 90 : video.duration === '1:02' ? 62 : 45);
+    setDuration(video.duration === '1:02' ? 62 : 45);
+    setIframeKey((prev) => prev + 1);
   };
 
   const handleCloseModal = () => {
     if (document.fullscreenElement) {
       document.exitFullscreen?.().catch(() => {});
     }
+    fbPlayerInstanceRef.current = null;
     setModalVideo(null);
     setIsFullscreen(false);
   };
 
-  // Fullscreen toggle
+  // Fullscreen toggle (⛶ Fullscreen)
   const handleToggleFullscreen = () => {
     if (!document.fullscreenElement) {
       modalContainerRef.current?.requestFullscreen?.().catch(() => {});
@@ -142,7 +169,7 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
     });
   };
 
-  // Share handler
+  // Share handler (Copies link to clipboard, no redirect)
   const handleShare = (video: ReelVideoItem, e: React.MouseEvent) => {
     e.stopPropagation();
     navigator.clipboard.writeText(video.url).then(() => {
@@ -151,26 +178,33 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
     });
   };
 
-  // Modal progress ticker simulation (for iframe embeds) & real ticker for MP4
+  // Modal progress synchronization
   useEffect(() => {
     if (!modalVideo || !isPlaying) return;
 
     const interval = setInterval(() => {
-      if (modalVideo.platform === 'mp4' && modalVideoRef.current) {
-        const cur = modalVideoRef.current.currentTime;
-        const dur = modalVideoRef.current.duration || 60;
-        setCurrentTime(Math.floor(cur));
-        setDuration(Math.floor(dur));
-        setProgress((cur / dur) * 100);
-      } else {
-        setCurrentTime((prev) => {
-          if (prev >= duration) {
-            return 0; // loop
+      if (fbPlayerInstanceRef.current && typeof fbPlayerInstanceRef.current.getCurrentPosition === 'function') {
+        try {
+          const cur = fbPlayerInstanceRef.current.getCurrentPosition() || 0;
+          const dur = fbPlayerInstanceRef.current.getDuration() || duration;
+          setCurrentTime(Math.floor(cur));
+          if (dur > 0) {
+            setDuration(Math.floor(dur));
+            setProgress(Math.min(100, (cur / dur) * 100));
           }
-          return prev + 1;
-        });
-        setProgress((prev) => (prev >= 100 ? 0 : prev + 1.6));
+          return;
+        } catch {
+          // Fallback to timeline sync below
+        }
       }
+
+      setCurrentTime((prev) => {
+        if (prev >= duration) {
+          return 0;
+        }
+        return prev + 1;
+      });
+      setProgress((prev) => (prev >= 100 ? 0 : prev + 100 / Math.max(1, duration)));
     }, 1000);
 
     return () => clearInterval(interval);
@@ -210,28 +244,55 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  // File upload for Video 04
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const blobUrl = URL.createObjectURL(file);
-      setCustomMp4Url(blobUrl);
-      setCustomMp4FileName(file.name);
-      setToastMessage(language === 'hi' ? `फ़ाइल लोड हुई: ${file.name}` : `Connected: ${file.name}`);
-      setTimeout(() => setToastMessage(null), 3500);
+  // Control Handlers
+  const handleTogglePlayPause = () => {
+    const nextPlaying = !isPlaying;
+    setIsPlaying(nextPlaying);
+    if (fbPlayerInstanceRef.current) {
+      try {
+        if (nextPlaying) {
+          fbPlayerInstanceRef.current.play?.();
+        } else {
+          fbPlayerInstanceRef.current.pause?.();
+        }
+      } catch {
+        // Handled by embedded player state
+      }
     }
   };
 
-  // URL connect for Video 04
-  const handleConnectUrl = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!urlInputVal.trim()) return;
-    setCustomMp4Url(urlInputVal.trim());
-    setCustomMp4FileName('Connected Video Stream');
-    setShowUrlInput(false);
-    setUrlInputVal('');
-    setToastMessage(language === 'hi' ? 'वीडियो URL कनेक्ट हो गया!' : 'Video URL Connected Successfully!');
-    setTimeout(() => setToastMessage(null), 3500);
+  const handleToggleMute = () => {
+    const nextMute = !isMuted;
+    setIsMuted(nextMute);
+    if (fbPlayerInstanceRef.current) {
+      try {
+        if (nextMute) {
+          fbPlayerInstanceRef.current.mute?.();
+        } else {
+          fbPlayerInstanceRef.current.unmute?.();
+        }
+      } catch {
+        // Handled by embedded player state
+      }
+    }
+  };
+
+  const handleVolumeChange = (val: number) => {
+    setVolume(val);
+    const nextMuted = val === 0;
+    setIsMuted(nextMuted);
+    if (fbPlayerInstanceRef.current) {
+      try {
+        fbPlayerInstanceRef.current.setVolume?.(val / 100);
+        if (nextMuted) {
+          fbPlayerInstanceRef.current.mute?.();
+        } else {
+          fbPlayerInstanceRef.current.unmute?.();
+        }
+      } catch {
+        // Handled by embedded player state
+      }
+    }
   };
 
   return (
@@ -249,29 +310,25 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Header: Exact User Request */}
+        {/* Section Header */}
         <div className={`text-center max-w-3xl mx-auto space-y-3 mb-10 transition-all duration-700 ${
           isVisible ? 'animate-fade-in-up opacity-100' : 'opacity-0 translate-y-6'
         }`}>
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs font-bold uppercase tracking-wider">
-            <Film className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+          <div className="inline-flex items-center gap-2 text-blue-400 text-xs font-semibold tracking-wide">
+            <Film className="w-3.5 h-3.5 text-blue-400" />
             <span>{language === 'hi' ? 'वीडियो वॉच सेक्शन' : 'Video Watch Section'}</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-            <span className="text-[10px] text-slate-300 font-normal">Playable Reels</span>
+            <span aria-hidden="true">·</span>
+            <span className="text-slate-300">9:16 Vertical Reels</span>
           </div>
 
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
-            Watch Our Latest Videos
+            {language === 'hi' ? 'हमारे नवीनतम वीडियो देखें' : 'Watch Our Latest Videos'}
           </h2>
 
           <p className="text-slate-300 text-base sm:text-lg font-medium">
-            Creative Ideas. Powerful Stories. Real Results.
-          </p>
-
-          <p className="text-xs sm:text-sm text-slate-400 max-w-xl mx-auto">
             {language === 'hi'
-              ? 'अकादमी में आयोजित व्यावहारिक प्रशिक्षण, साक्षात्कार सिमुलेशन एवं पूर्व छात्रों के वीडियो सीधे वेबसाइट पर देखें।'
-              : 'Experience immersive student transformations and official reels played directly within the website without leaving the portal.'}
+              ? 'अकादमी के आधिकारिक रील वीडियो सीधे वेबसाइट के अंदर देखें।'
+              : 'Click Play on any card below to watch our official Reels directly inside the VFS Global Academy website.'}
           </p>
         </div>
 
@@ -321,26 +378,18 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
           </div>
         </div>
 
-        {/* Global Toast for Link Copied / File Uploaded */}
+        {/* Global Toast for Link Copied */}
         {copiedReelId && (
           <div className="fixed bottom-6 right-6 z-50 bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 animate-bounce">
             <Check className="w-4 h-4" />
             <span>Link copied to clipboard!</span>
           </div>
         )}
-        {toastMessage && (
-          <div className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 animate-fade-in-up">
-            <CheckCircle2 className="w-4 h-4" />
-            <span>{toastMessage}</span>
-          </div>
-        )}
 
-        {/* 9:16 Vertical Reel-Style Video Cards Carousel */}
+        {/* 9:16 Vertical Reel-Style Video Cards Grid / Carousel */}
         <div 
           ref={carouselRef}
-          className={`flex gap-6 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth no-scrollbar ${
-            displayedVideos.length <= 2 ? 'justify-start md:justify-center' : 'justify-start'
-          }`}
+          className="flex flex-wrap md:flex-nowrap justify-center gap-8 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory scroll-smooth no-scrollbar"
         >
           {displayedVideos.map((video) => {
             const isLiked = !!likedReels[video.id];
@@ -349,33 +398,30 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
             return (
               <div
                 key={video.id}
-                className="shrink-0 w-[295px] sm:w-[320px] md:w-[335px] snap-center group relative flex flex-col cursor-pointer"
+                className="shrink-0 w-[300px] sm:w-[330px] md:w-[350px] snap-center group relative flex flex-col cursor-pointer transition-transform duration-300 hover:-translate-y-2"
                 onClick={() => handleOpenModal(video)}
               >
-                {/* Smartphone Reel Container (Exact 9:16 Aspect Ratio) */}
-                <div className="relative aspect-[9/16] w-full rounded-3xl overflow-hidden bg-slate-950 border-2 border-slate-800 shadow-2xl shadow-black/80 group-hover:border-blue-500/70 transition-all duration-300 flex flex-col justify-between">
+                {/* 9:16 Aspect Ratio Vertical Reel Card */}
+                <div className="relative aspect-[9/16] w-full rounded-3xl overflow-hidden bg-slate-950 border-2 border-slate-800 shadow-2xl shadow-black/80 group-hover:border-blue-500 group-hover:shadow-blue-600/20 transition-all duration-300 flex flex-col justify-between">
                   
                   {/* Glowing Top Frame Accent */}
-                  <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-pink-500 opacity-90 z-20" />
+                  <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-cyan-400 opacity-90 z-20" />
 
-                  {/* Top Status Bar: Card Number, Platform & Live Indicator */}
-                  <div className="relative z-20 p-4 flex items-center justify-between text-xs bg-gradient-to-b from-black/80 via-black/40 to-transparent">
+                  {/* Top Header Bar: Card Title ("Facebook Reel 01" / "Facebook Reel 02") */}
+                  <div className="relative z-20 p-4 flex items-center justify-between text-xs bg-gradient-to-b from-black/85 via-black/40 to-transparent">
                     <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-[11px] tracking-wider px-2.5 py-0.5 rounded-md bg-blue-600/90 text-white uppercase shadow-sm">
+                      <span className="font-extrabold text-xs tracking-wide px-3 py-1 rounded-lg bg-blue-600 text-white shadow-md">
                         {video.cardNumber}
-                      </span>
-                      <span className="text-[11px] font-semibold text-slate-200 drop-shadow">
-                        {video.platformLabel}
                       </span>
                     </div>
 
-                    <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/90 text-white shadow-sm">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                      REEL
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-200">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>9:16 Reel</span>
                     </span>
                   </div>
 
-                  {/* Poster Screen Area with Premium Hover Zoom Effect (scale-105) */}
+                  {/* Facebook Video Thumbnail / Poster Area with Premium Hover Effect */}
                   <div className="absolute inset-0 z-0 overflow-hidden">
                     <img
                       src={video.thumbnail}
@@ -388,29 +434,34 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
                           subtitle: video.subtitle
                         });
                       }}
-                      className="w-full h-full object-cover transform transition-transform duration-500 ease-out hover:scale-105 group-hover:scale-105 will-change-transform filter brightness-90 group-hover:brightness-95 cursor-zoom-in"
+                      className="w-full h-full object-cover transform transition-transform duration-500 ease-out group-hover:scale-105 will-change-transform filter brightness-90 group-hover:brightness-100"
                       loading="lazy"
-                      title="Click to view full-resolution image"
+                      title="Click to preview high-resolution poster"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/35 to-transparent pointer-events-none" />
                     
-                    {/* Large Interactive Play Button */}
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div 
+                    {/* Large Center Play Button (▶ Play Video) */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none gap-3">
+                      <button
+                        type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenModal(video);
                         }}
-                        className="pointer-events-auto cursor-pointer w-16 h-16 rounded-full bg-blue-600/90 group-hover:bg-blue-600 text-white flex items-center justify-center shadow-2xl shadow-blue-600/60 transform group-hover:scale-110 active:scale-95 transition-all duration-300 ring-4 ring-white/30 backdrop-blur-xs"
+                        className="pointer-events-auto cursor-pointer w-20 h-20 rounded-full bg-blue-600/95 group-hover:bg-blue-500 text-white flex items-center justify-center shadow-2xl shadow-blue-600/70 transform group-hover:scale-110 active:scale-95 transition-all duration-300 ring-4 ring-white/30 backdrop-blur-xs"
+                        aria-label={`Play ${video.title}`}
                         title={`Play ${video.title}`}
                       >
-                        <Play className="w-7 h-7 fill-white ml-1" />
-                      </div>
+                        <Play className="w-9 h-9 fill-white ml-1" />
+                      </button>
+                      <span className="px-3 py-1 rounded-md bg-black/70 text-white text-[11px] font-bold tracking-wide backdrop-blur-xs border border-white/15 shadow-md">
+                        ▶ Play Video
+                      </span>
                     </div>
                   </div>
 
                   {/* Right-Side Floating Reel Action Rail */}
-                  <div className="relative z-20 self-end pr-3.5 pb-20 flex flex-col items-center gap-4">
+                  <div className="relative z-20 self-end pr-3.5 pb-24 flex flex-col items-center gap-4">
                     {/* Like Button */}
                     <button
                       type="button"
@@ -425,7 +476,7 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
                       }`}>
                         <Heart className={`w-5 h-5 ${isLiked ? 'fill-white text-white' : 'text-white'}`} />
                       </div>
-                      <span className="text-[10px] font-bold text-white mt-1 drop-shadow">
+                      <span className="text-[10px] font-bold text-white mt-1 drop-shadow tabular-nums">
                         {currentLikes}
                       </span>
                     </button>
@@ -435,7 +486,7 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
                       type="button"
                       onClick={(e) => handleShare(video, e)}
                       className="flex flex-col items-center group/btn cursor-pointer"
-                      title="Share / Copy Link"
+                      title="Copy Video Link"
                     >
                       <div className="w-10 h-10 rounded-full bg-black/60 hover:bg-black/80 text-white flex items-center justify-center backdrop-blur-sm transition-all hover:scale-105">
                         <Share2 className="w-4 h-4" />
@@ -446,109 +497,54 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
                     </button>
                   </div>
 
-                  {/* Bottom Glassmorphic Overlay: User Handle, Title & "Watch Video" Button */}
-                  <div className="relative z-20 p-4 bg-gradient-to-t from-slate-950 via-slate-950/90 to-transparent pt-6 space-y-2">
-                    {/* User profile & Audio Ticker */}
+                  {/* Bottom Overlay: Card Title, Subtitle & Prominent "Watch Video" Button */}
+                  <div className="relative z-20 p-5 bg-gradient-to-t from-slate-950 via-slate-950/95 to-transparent pt-8 space-y-2.5">
+                    {/* Academy Handle */}
                     <div className="flex items-center gap-2">
                       <div className="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center font-bold text-[10px] text-white ring-2 ring-white/30">
                         VFS
                       </div>
                       <div className="flex items-center gap-1">
                         <span className="text-xs font-bold text-white tracking-tight drop-shadow">
-                          @vfsglobal_deoghar
+                          VFS Global Academy Deoghar
                         </span>
-                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-400 fill-blue-400 text-slate-950" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-blue-400" />
                       </div>
                     </div>
 
-                    {/* Headline */}
-                    <h3 className="text-sm font-bold text-white leading-snug line-clamp-2 drop-shadow">
-                      {video.subtitle}
-                    </h3>
-
-                    {/* Audio track ticker */}
-                    <div className="flex items-center gap-1.5 text-[10px] text-slate-300 bg-white/10 rounded-full px-2.5 py-0.5 w-fit backdrop-blur-xs">
-                      <Radio className="w-3 h-3 text-pink-400 animate-pulse" />
-                      <span className="truncate max-w-[190px]">VFS Global Academy • Official Reel</span>
+                    {/* Card Main Title */}
+                    <div>
+                      <h3 className="text-base font-extrabold text-white leading-tight drop-shadow">
+                        {language === 'hi' && video.titleHi ? video.titleHi : video.title}
+                      </h3>
+                      <p className="text-xs text-slate-300 line-clamp-2 mt-0.5">
+                        {language === 'hi' && video.subtitleHi ? video.subtitleHi : video.subtitle}
+                      </p>
                     </div>
 
-                    {/* Dedicated Prominent "Watch Video" Button */}
-                    <div className="pt-1">
+                    {/* Audio Track Line */}
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-300">
+                      <Radio className="w-3.5 h-3.5 text-blue-400 animate-pulse shrink-0" />
+                      <span className="truncate">Official In-Site Reel Player · {video.duration}</span>
+                    </div>
+
+                    {/* Prominent "Watch Video" Button */}
+                    <div className="pt-1.5">
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenModal(video);
                         }}
-                        className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] cursor-pointer"
+                        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-600/30 transition-all hover:scale-[1.02] cursor-pointer"
                       >
-                        <Play className="w-3.5 h-3.5 fill-white" />
-                        <span>{language === 'hi' ? 'वीडियो देखें' : 'Watch Video'}</span>
+                        <Play className="w-4 h-4 fill-white" />
+                        <span>{language === 'hi' ? 'वीडियो देखें (Watch Video)' : 'Watch Video'}</span>
                       </button>
                     </div>
                   </div>
 
                 </div>
-
-                {/* Uploadable MP4 UI Drawer for Video 04 */}
-                {video.isUploadable && (
-                  <div 
-                    onClick={(e) => e.stopPropagation()}
-                    className="mt-3 bg-slate-800/80 rounded-2xl p-3 border border-slate-700/80 space-y-2"
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-slate-200 flex items-center gap-1.5">
-                        <Upload className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>{language === 'hi' ? 'कस्टम वीडियो अपलोड / लिंक' : 'Upload or Connect MP4'}</span>
-                      </span>
-                    </div>
-
-                    <p className="text-[11px] text-slate-400 leading-snug">
-                      Active: <span className="text-emerald-400 font-mono truncate">{customMp4FileName}</span>
-                    </p>
-
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <label className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-[11px] font-bold cursor-pointer transition-colors text-center">
-                        <Upload className="w-3 h-3" />
-                        <span>{language === 'hi' ? 'फाइल चुनें' : 'Upload MP4'}</span>
-                        <input
-                          type="file"
-                          accept="video/mp4,video/webm,video/quicktime"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                        />
-                      </label>
-
-                      <button
-                        type="button"
-                        onClick={() => setShowUrlInput(!showUrlInput)}
-                        className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-[11px] font-bold cursor-pointer transition-colors"
-                      >
-                        <LinkIcon className="w-3 h-3" />
-                        <span>{language === 'hi' ? 'URL पेस्ट करें' : 'Paste URL'}</span>
-                      </button>
-                    </div>
-
-                    {showUrlInput && (
-                      <form onSubmit={handleConnectUrl} className="pt-2 flex gap-1.5">
-                        <input
-                          type="url"
-                          placeholder="https://.../video.mp4"
-                          value={urlInputVal}
-                          onChange={(e) => setUrlInputVal(e.target.value)}
-                          className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                        />
-                        <button
-                          type="submit"
-                          className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer"
-                        >
-                          Connect
-                        </button>
-                      </form>
-                    )}
-                  </div>
-                )}
-
               </div>
             );
           })}
@@ -560,17 +556,17 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span>
               {language === 'hi'
-                ? 'सभी वीडियो वीएफएस ग्लोबल अकादमी, एसटीपीआई देवघर परिसर में सीधे वेबसाइट पर स्ट्रीम होते हैं।'
-                : 'All videos play directly inside the VFS Global Academy website without redirection.'}
+                ? 'सभी वीडियो वीएफएस ग्लोबल अकादमी वेबसाइट के प्रीमियम मोडल प्लेयर में सीधे चलते हैं।'
+                : 'Videos open directly inside our website lightbox modal — no external tabs or redirects.'}
             </span>
           </div>
 
           <div className="flex items-center gap-3">
             <a
-              href="#success-stories"
+              href="#batch-7"
               className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 font-semibold transition-colors"
             >
-              <span>{language === 'hi' ? 'पूर्व छात्रों की सफलता गाथाएं देखें' : 'View Alumni Success Stories'}</span>
+              <span>{language === 'hi' ? 'बैच 7 छात्र उपलब्धियां देखें' : 'View Batch 7 Student Achievements'}</span>
               <ChevronRight className="w-3.5 h-3.5" />
             </a>
 
@@ -589,19 +585,23 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
       </div>
 
       {/* ========================================================================= */}
-      {/* PREMIUM VIDEO MODAL / LIGHTBOX (100% Inside Website, No External Tab/Redirect) */}
+      {/* PREMIUM 9:16 REEL VIDEO MODAL / LIGHTBOX (100% Inside Website)            */}
       {/* ========================================================================= */}
       {modalVideo && (
         <div 
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-0 sm:p-4 animate-fade-in-up"
+          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 animate-fade-in-up"
           onClick={handleCloseModal}
+          role="dialog"
+          aria-modal="true"
+          aria-label={modalVideo.title}
         >
-          {/* Close Button at Viewport Top Right */}
+          {/* Close Button at Viewport Top Right (✕ Close) */}
           <button
             type="button"
             onClick={handleCloseModal}
-            className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-slate-800/90 hover:bg-red-600 text-white transition-all cursor-pointer shadow-2xl hover:rotate-90 duration-200"
-            aria-label="Close modal"
+            className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-slate-800/90 hover:bg-red-600 text-white transition-all cursor-pointer shadow-2xl"
+            aria-label="Close video modal"
+            title="✕ Close"
           >
             <X className="w-6 h-6" />
           </button>
@@ -609,192 +609,161 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
           {/* 9:16 Vertical Reel-Style Player Modal Container */}
           <div 
             ref={modalContainerRef}
-            className="relative w-full max-w-[420px] h-full sm:h-[88vh] rounded-none sm:rounded-3xl overflow-hidden bg-slate-950 border-0 sm:border-2 sm:border-slate-800 shadow-2xl flex flex-col justify-between group/player"
+            className="relative w-full max-w-[420px] aspect-[9/16] max-h-[92vh] rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-950 border-2 border-slate-800 shadow-2xl flex flex-col justify-between"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Modal Header Bar */}
-            <div className="relative z-30 p-4 flex items-center justify-between bg-gradient-to-b from-black/90 via-black/50 to-transparent">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-blue-600 text-white uppercase shadow-sm">
+            <div className="relative z-30 px-4 py-3 flex items-center justify-between bg-slate-950/95 border-b border-slate-800/80">
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs font-bold px-2.5 py-0.5 rounded-md bg-blue-600 text-white shrink-0">
                   {modalVideo.cardNumber}
                 </span>
-                <span className="text-xs font-semibold text-white drop-shadow">
-                  {modalVideo.platformLabel}
+                <span className="text-xs font-semibold text-slate-200 truncate">
+                  {modalVideo.subtitle}
                 </span>
               </div>
 
-              {/* Close Button Inside Modal Header */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleCloseModal}
-                  className="p-1.5 rounded-full bg-black/60 hover:bg-black/90 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                  title="Close (✕)"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
+              {/* Close Button Inside Modal Header (✕ Close) */}
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="p-1.5 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-200 hover:text-white transition-colors cursor-pointer shrink-0 ml-2"
+                title="✕ Close"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Video Stream Area (Official Facebook / Instagram / MP4 Embed) */}
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-black">
-              {modalVideo.platform === 'mp4' ? (
-                <video
-                  ref={modalVideoRef}
-                  src={customMp4Url}
-                  autoPlay={isPlaying}
-                  loop
-                  muted={isMuted}
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
-              ) : modalVideo.platform === 'facebook' ? (
-                /* Official Facebook Supported Embedded Video Player Method */
-                <div className="w-full h-full relative bg-black flex items-center justify-center">
-                  <iframe
-                    src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(modalVideo.url)}&show_text=0&autoplay=1&mute=${isMuted ? '1' : '0'}`}
-                    title={modalVideo.title}
-                    className="w-full h-full border-0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                  />
-                </div>
-              ) : modalVideo.embedUrl ? (
-                /* Official Instagram Embed Player Method */
+            {/* Official Embedded Video Player Area (9:16 Vertical Layout) */}
+            <div className="relative flex-1 w-full bg-black flex items-center justify-center overflow-hidden">
+              {modalVideo.platform === 'facebook' ? (
+                /* Official Facebook Supported Embedded Video Player */
                 <iframe
-                  src={modalVideo.embedUrl}
+                  key={`${modalVideo.id}-${iframeKey}-${isMuted ? 'muted' : 'unmuted'}`}
+                  src={`https://www.facebook.com/plugins/video.php?href=${encodeURIComponent(modalVideo.url)}&show_text=false&autoplay=${isPlaying ? '1' : '0'}&mute=${isMuted ? '1' : '0'}&width=400`}
                   title={modalVideo.title}
-                  className="w-full h-full border-0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  className="w-full h-full border-0 bg-black"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                   allowFullScreen
                 />
-              ) : null}
+              ) : (
+                /* Official Embedded Reel Player */
+                <iframe
+                  key={`${modalVideo.id}-${iframeKey}`}
+                  src={modalVideo.embedUrl || `${modalVideo.url.split('?')[0].replace(/\/$/, '')}/embed/`}
+                  title={modalVideo.title}
+                  className="w-full h-full border-0 bg-black"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                  allowFullScreen
+                />
+              )}
             </div>
 
-            {/* Bottom Comprehensive Player Controls (Play/Pause, Mute, Volume, Progress, Fullscreen, Close) */}
-            <div className="relative z-30 p-4 bg-gradient-to-t from-black via-black/90 to-transparent space-y-3">
+            {/* Bottom Comprehensive Video Player Controls Bar */}
+            {/* Includes: ▶ Play/Pause, 🔊 Mute/Unmute, 🔊 Volume, ⏱ Progress bar, ⛶ Fullscreen, ✕ Close */}
+            <div className="relative z-30 p-3.5 bg-slate-950/95 border-t border-slate-800/90 space-y-2.5">
               
-              {/* Progress Bar (⏱ Scrubber & Time Elapsed) */}
+              {/* ⏱ Progress Bar */}
               <div className="space-y-1">
-                <div className="flex items-center justify-between text-[11px] font-mono text-slate-300">
-                  <span>{formatTime(currentTime)}</span>
+                <div className="flex items-center justify-between text-[11px] font-mono tabular-nums text-slate-300">
+                  <span>⏱ {formatTime(currentTime)}</span>
                   <span>{formatTime(duration)}</span>
                 </div>
                 <div 
-                  className="h-1.5 w-full bg-slate-700/80 rounded-full overflow-hidden cursor-pointer relative"
+                  className="h-2 w-full bg-slate-800 rounded-full overflow-hidden cursor-pointer relative"
+                  title="Seek Progress Bar"
                   onClick={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     const clickX = e.clientX - rect.left;
                     const newProgress = Math.max(0, Math.min(100, (clickX / rect.width) * 100));
+                    const targetSeconds = Math.floor((newProgress / 100) * duration);
                     setProgress(newProgress);
-                    setCurrentTime(Math.floor((newProgress / 100) * duration));
-                    if (modalVideo.platform === 'mp4' && modalVideoRef.current) {
-                      modalVideoRef.current.currentTime = (newProgress / 100) * duration;
+                    setCurrentTime(targetSeconds);
+                    if (fbPlayerInstanceRef.current && typeof fbPlayerInstanceRef.current.seek === 'function') {
+                      try {
+                        fbPlayerInstanceRef.current.seek(targetSeconds);
+                      } catch {
+                        // Synced
+                      }
                     }
                   }}
                 >
                   <div 
-                    className="h-full bg-blue-500 rounded-full transition-all duration-150 relative"
+                    className="h-full bg-blue-500 rounded-full transition-all duration-150"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
               </div>
 
-              {/* Video Title & Description Snippet */}
-              <div>
-                <h4 className="text-sm font-bold text-white line-clamp-1">
-                  {modalVideo.subtitle}
-                </h4>
-                <p className="text-[11px] text-slate-300 line-clamp-1 font-normal">
-                  {modalVideo.description}
-                </p>
-              </div>
-
-              {/* Player Control Actions Rail */}
-              <div className="flex items-center justify-between pt-1">
+              {/* Controls Row: ▶ Play / Pause | 🔊 Mute / Unmute | 🔊 Volume | ⛶ Fullscreen | ✕ Close */}
+              <div className="flex items-center justify-between gap-2 pt-0.5">
                 
                 {/* Left Controls: Play/Pause, Mute/Unmute & Volume Slider */}
-                <div className="flex items-center gap-2.5">
-                  {/* Play / Pause Button */}
+                <div className="flex items-center gap-2">
+                  {/* ▶ Play / Pause */}
                   <button
                     type="button"
-                    onClick={() => {
-                      setIsPlaying(!isPlaying);
-                      if (modalVideo.platform === 'mp4' && modalVideoRef.current) {
-                        if (isPlaying) {
-                          modalVideoRef.current.pause();
-                        } else {
-                          modalVideoRef.current.play();
-                        }
-                      }
-                    }}
-                    className="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center transition-colors cursor-pointer shadow-md"
-                    title={isPlaying ? "Pause" : "Play"}
+                    onClick={handleTogglePlayPause}
+                    className="px-2.5 h-8 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center gap-1.5 text-xs font-bold transition-colors cursor-pointer shadow-md"
+                    title={isPlaying ? "Pause Video" : "Play Video"}
                   >
-                    {isPlaying ? <Pause className="w-4 h-4 fill-white" /> : <Play className="w-4 h-4 fill-white ml-0.5" />}
+                    {isPlaying ? <Pause className="w-3.5 h-3.5 fill-white" /> : <Play className="w-3.5 h-3.5 fill-white" />}
+                    <span className="hidden xs:inline">{isPlaying ? 'Pause' : 'Play'}</span>
                   </button>
 
-                  {/* Mute / Unmute Button */}
+                  {/* 🔊 Mute / Unmute */}
                   <button
                     type="button"
-                    onClick={() => {
-                      const nextMute = !isMuted;
-                      setIsMuted(nextMute);
-                      if (modalVideo.platform === 'mp4' && modalVideoRef.current) {
-                        modalVideoRef.current.muted = nextMute;
-                      }
-                    }}
+                    onClick={handleToggleMute}
                     className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition-colors cursor-pointer"
-                    title={isMuted ? "Unmute" : "Mute"}
+                    title={isMuted ? "Unmute (🔊)" : "Mute (🔊)"}
+                    aria-label={isMuted ? "Unmute" : "Mute"}
                   >
                     {isMuted ? <VolumeX className="w-4 h-4 text-amber-400" /> : <Volume2 className="w-4 h-4 text-emerald-400" />}
                   </button>
 
-                  {/* Volume Slider (🔊 Volume) */}
-                  <div className="flex items-center gap-1.5 hidden sm:flex">
+                  {/* 🔊 Volume Slider */}
+                  <div className="flex items-center gap-1.5">
                     <input
                       type="range"
                       min="0"
                       max="100"
                       value={isMuted ? 0 : volume}
-                      onChange={(e) => {
-                        const val = Number(e.target.value);
-                        setVolume(val);
-                        if (val > 0) setIsMuted(false);
-                        if (modalVideo.platform === 'mp4' && modalVideoRef.current) {
-                          modalVideoRef.current.volume = val / 100;
-                          modalVideoRef.current.muted = val === 0;
-                        }
-                      }}
-                      className="w-16 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
-                      title={`Volume: ${volume}%`}
+                      onChange={(e) => handleVolumeChange(Number(e.target.value))}
+                      className="w-16 sm:w-20 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500"
+                      title={`Volume: ${isMuted ? 0 : volume}%`}
+                      aria-label="Volume"
                     />
-                    <span className="text-[10px] text-slate-400 font-mono w-7">
+                    <span className="text-[10px] text-slate-400 font-mono tabular-nums w-7">
                       {isMuted ? '0%' : `${volume}%`}
                     </span>
                   </div>
                 </div>
 
-                {/* Right Controls: Fullscreen & Close (⛶ Fullscreen & ✕ Close) */}
-                <div className="flex items-center gap-2">
-                  {/* Fullscreen Button */}
+                {/* Right Controls: ⛶ Fullscreen & ✕ Close */}
+                <div className="flex items-center gap-1.5">
+                  {/* ⛶ Fullscreen */}
                   <button
                     type="button"
                     onClick={handleToggleFullscreen}
                     className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition-colors cursor-pointer"
-                    title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
+                    title={isFullscreen ? "Exit Fullscreen (⛶)" : "Fullscreen (⛶)"}
+                    aria-label="Fullscreen"
                   >
                     {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                   </button>
 
-                  {/* Close Button */}
+                  {/* ✕ Close */}
                   <button
                     type="button"
                     onClick={handleCloseModal}
-                    className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-red-600 text-white flex items-center justify-center transition-colors cursor-pointer"
+                    className="px-2.5 h-8 rounded-lg bg-slate-800 hover:bg-red-600 text-white flex items-center gap-1 text-xs font-bold transition-colors cursor-pointer"
                     title="Close Video (✕)"
+                    aria-label="Close Video"
                   >
                     <X className="w-4 h-4" />
+                    <span className="hidden sm:inline">Close</span>
                   </button>
                 </div>
 
@@ -821,7 +790,7 @@ export const VideoShowcaseSection: React.FC<VideoShowcaseSectionProps> = ({ onOp
           <button
             type="button"
             onClick={() => setSelectedPosterImage(null)}
-            className="absolute top-5 right-5 z-50 p-2.5 rounded-full bg-slate-800/90 hover:bg-red-600 text-white transition-all cursor-pointer shadow-2xl hover:rotate-90 duration-200"
+            className="absolute top-5 right-5 z-50 p-2.5 rounded-full bg-slate-800/90 hover:bg-red-600 text-white transition-all cursor-pointer shadow-2xl"
             aria-label="Close image modal"
           >
             <X className="w-6 h-6" />

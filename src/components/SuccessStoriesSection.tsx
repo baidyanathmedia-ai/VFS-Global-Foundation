@@ -118,8 +118,17 @@ export const SuccessStoriesSection: React.FC<SuccessStoriesSectionProps> = ({ on
             {t.successStoriesSubtitle}
           </p>
 
-          {/* Quick Anchor Link to New Video Showcase Section */}
-          <div className="pt-2">
+          {/* Quick Anchor Links to Batch 7 and Video Showcase Section */}
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2">
+            <a
+              href="#batch-7"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-950/60 dark:hover:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-xs font-bold transition-all shadow-xs group"
+            >
+              <Award className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 group-hover:scale-110 transition-transform" />
+              <span>{language === 'hi' ? 'बैच 7 उपलब्धियां देखें' : 'Batch 7 Achievements (8 Profiles)'}</span>
+              <span className="text-emerald-500 font-extrabold">↓</span>
+            </a>
+
             <a
               href="#video-showcase"
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/60 dark:hover:bg-blue-900/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 text-xs font-bold transition-all shadow-xs group"
