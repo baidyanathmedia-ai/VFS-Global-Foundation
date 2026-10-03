@@ -117,7 +117,6 @@ export const Header: React.FC<HeaderProps> = ({ onOpenApply, activeSection }) =>
     { name: t.navAdmission, href: '#admission', id: 'admission' },
     { name: t.navGallery, href: '#gallery', id: 'gallery' },
     { name: t.navLeadership, href: '#leadership', id: 'leadership' },
-    { name: t.navVideos, href: '#video-showcase', id: 'video-showcase' },
     { name: t.navNotices, href: '#notices', id: 'notices' },
     { name: t.navContact, href: '#contact', id: 'contact' },
   ];

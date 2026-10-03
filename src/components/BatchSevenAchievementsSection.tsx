@@ -1,13 +1,8 @@
 import React from 'react';
 import { 
   GraduationCap, 
-  Award, 
-  Briefcase, 
   CheckCircle2, 
-  ArrowRight, 
-  Sparkles,
-  Building2,
-  ExternalLink
+  ArrowRight
 } from 'lucide-react';
 import { BATCH_7_ACHIEVEMENTS_DATA } from '../data/academyData';
 import { useLanguage } from '../context/LanguageContext';
@@ -20,14 +15,6 @@ export const BatchSevenAchievementsSection: React.FC<BatchSevenAchievementsSecti
   onOpenApply 
 }) => {
   const { language } = useLanguage();
-
-  const handleScrollToAllAchievements = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const target = document.getElementById('testimonials');
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
 
   return (
     <section 
@@ -42,47 +29,55 @@ export const BatchSevenAchievementsSection: React.FC<BatchSevenAchievementsSecti
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-3 mb-14">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border border-blue-200 dark:border-blue-800/60 text-xs font-bold uppercase tracking-wider shadow-2xs">
-            <GraduationCap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-            <span>{language === 'hi' ? 'वीएफएस ग्लोबल अकादमी देवघर • बैच शोकेस' : 'VFS Global Academy Deoghar • Batch Showcase'}</span>
+          <div className="inline-flex items-center gap-2 text-blue-700 dark:text-blue-400 text-xs font-semibold tracking-wide">
+            <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span>VFS Global Academy Deoghar</span>
+            <span aria-hidden="true">·</span>
+            <span>Batch 7 Alumni Showcase</span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            {language === 'hi' ? 'बैच 7 — छात्र उपलब्धियां' : 'Batch 7 — Student Achievements'}
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight text-balance">
+            Batch 7 — Student Achievements
           </h2>
 
-          <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg font-medium">
-            {language === 'hi' 
-              ? 'हमारे बैच 7 के विद्यार्थियों के सीखने, प्रगति और उपलब्धियों का उत्सव।'
-              : 'Celebrating the learning, growth and achievements of our Batch 7 students.'}
+          <p className="text-lg sm:text-xl font-bold text-blue-700 dark:text-blue-400">
+            Celebrating Learning, Growth &amp; Professional Journeys
+          </p>
+
+          <p className="text-slate-600 dark:text-slate-300 text-base sm:text-lg leading-relaxed max-w-2xl mx-auto">
+            Our Batch 7 students have taken their learning, communication skills and professional confidence into different career paths and professional fields.
           </p>
         </div>
 
-        {/* 8 Profile Cards Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {BATCH_7_ACHIEVEMENTS_DATA.map((student, index) => (
-            <div
+        {/* 8 Student Journey Cards Grid (01 to 08) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
+          {BATCH_7_ACHIEVEMENTS_DATA.map((student) => (
+            <article
               key={student.id}
-              className="group relative bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-6 flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-1.5"
+              className="group relative bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-6 sm:p-8 flex flex-col justify-between shadow-sm hover:shadow-xl hover:border-blue-500/50 dark:hover:border-blue-500/50 transition-all duration-300 hover:-translate-y-1"
             >
-              {/* Subtle Top Glowing Line Accent */}
-              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-2xl" />
+              {/* Top Accent Line */}
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-transparent via-blue-600 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-2xl" />
 
               <div>
-                {/* Card Top: Small Batch 7 Badge & Verification Icon */}
-                <div className="flex items-center justify-between gap-2 mb-5">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200/70 dark:border-blue-800/60 font-extrabold text-[11px] tracking-wide uppercase shadow-2xs">
-                    <Award className="w-3 h-3 text-blue-600 dark:text-blue-400" />
+                {/* Top Metadata Row (Clean Unboxed Text) */}
+                <div className="flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400 mb-4">
+                  <div className="flex items-center gap-2 font-medium">
+                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400 tabular-nums">
+                      {student.number}
+                    </span>
+                    <span aria-hidden="true">·</span>
                     <span>{student.batch}</span>
-                  </span>
-
-                  <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 font-mono">
-                    #{String(index + 1).padStart(2, '0')}
+                    <span aria-hidden="true">·</span>
+                    <span>{student.domain}</span>
+                  </div>
+                  <span className="text-slate-400 dark:text-slate-500 font-medium">
+                    STPI Deoghar
                   </span>
                 </div>
 
-                {/* Profile Photo / Avatar */}
-                <div className="flex items-center gap-4 mb-5">
+                {/* Profile Identity Header: Avatar + "01. Name" + "Role — Organization" */}
+                <div className="flex items-start gap-4 pb-5 border-b border-slate-100 dark:border-slate-800/80">
                   <div className="relative shrink-0">
                     {student.avatarUrl ? (
                       <img 
@@ -105,75 +100,50 @@ export const BatchSevenAchievementsSection: React.FC<BatchSevenAchievementsSecti
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 block truncate">
-                      {student.domain}
-                    </span>
-                    {/* Name Displayed Prominently */}
-                    <h3 className="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white tracking-tight truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                      <span className="font-mono text-blue-600 dark:text-blue-400 mr-1.5 tabular-nums">
+                        {student.number}.
+                      </span>
                       {student.name}
                     </h3>
+                    <p className="text-sm sm:text-base font-bold text-slate-700 dark:text-slate-200 mt-1 leading-snug">
+                      {student.fullDesignation}
+                    </p>
                   </div>
                 </div>
 
-                {/* Current Role / Profession — Uniform Format: Name + Current Role/Profession */}
-                <div className="pt-2 border-t border-slate-100 dark:border-slate-800/80">
-                  <div className="text-[11px] uppercase font-bold text-slate-400 dark:text-slate-500 tracking-wider mb-1 flex items-center gap-1.5">
-                    <Briefcase className="w-3 h-3 text-slate-400" />
-                    <span>Current Role & Organization</span>
-                  </div>
-                  
-                  <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 leading-snug">
-                    <span className="font-bold text-slate-900 dark:text-white">{student.role}</span>
-                    <span className="text-slate-400 dark:text-slate-500 mx-1.5">—</span>
-                    <span className="text-slate-700 dark:text-slate-300">{student.organization}</span>
-                  </p>
-                </div>
+                {/* Professional Journey Narrative */}
+                <p className="mt-5 text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {student.story}
+                </p>
               </div>
-
-              {/* Card Footer Indicator */}
-              <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500 font-medium">
-                <span className="flex items-center gap-1">
-                  <Building2 className="w-3 h-3 text-slate-400" />
-                  <span>STPI Deoghar Alum</span>
-                </span>
-                <span className="text-blue-600 dark:text-blue-400 font-bold opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-0.5">
-                  Verified <ArrowRight className="w-3 h-3" />
-                </span>
-              </div>
-            </div>
+            </article>
           ))}
         </div>
 
-        {/* Section Bottom Actions: View All Achievements & Join Next Batch */}
-        <div className="mt-14 pt-8 border-t border-slate-200/80 dark:border-slate-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
-            <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
-            <span>
-              {language === 'hi' 
-                ? 'वीएफएस ग्लोबल अकादमी, एसटीपीआई देवघर से प्रशिक्षित छात्र-छात्राएं विभिन्न उद्योगों में नेतृत्व कर रहे हैं।'
-                : 'Graduates trained at VFS Global Academy, STPI Deoghar are excelling across high-growth careers.'}
-            </span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            {/* View All Achievements Button */}
-            <a
-              href="#testimonials"
-              onClick={handleScrollToAllAchievements}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 text-xs sm:text-sm font-bold transition-all shadow-sm hover:shadow-md cursor-pointer group"
-            >
-              <span>{language === 'hi' ? 'सभी उपलब्धियां देखें' : 'View All Achievements'}</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </a>
+        {/* Closing Statement Banner: "Batch 7 — Different Fields, One Journey of Growth" */}
+        <div className="mt-14 pt-10 border-t border-slate-200/80 dark:border-slate-800/80">
+          <div className="bg-white dark:bg-slate-950 rounded-2xl border border-slate-200/90 dark:border-slate-800 p-8 sm:p-10 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="max-w-3xl space-y-2.5">
+              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Batch 7 — Different Fields, One Journey of Growth
+              </h3>
+              <p className="text-slate-600 dark:text-slate-300 text-sm sm:text-base leading-relaxed">
+                From entrepreneurship and education to communication, business, safety and engineering, our Batch 7 students continue to take their learning forward into diverse professional journeys.
+              </p>
+            </div>
 
             {onOpenApply && (
-              <button
-                type="button"
-                onClick={onOpenApply}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-bold transition-all shadow-md shadow-blue-600/20 hover:scale-[1.02] cursor-pointer"
-              >
-                <span>{language === 'hi' ? 'प्रवेश के लिए आवेदन करें' : 'Apply For Next Batch'}</span>
-              </button>
+              <div className="shrink-0">
+                <button
+                  type="button"
+                  onClick={onOpenApply}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold transition-all shadow-md shadow-blue-600/20 hover:scale-[1.02] cursor-pointer"
+                >
+                  <span>{language === 'hi' ? 'प्रवेश के लिए आवेदन करें' : 'Apply For Next Batch'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
             )}
           </div>
         </div>

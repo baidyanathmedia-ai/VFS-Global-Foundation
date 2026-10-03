@@ -66,10 +66,13 @@ export interface SuccessStory {
 
 export interface BatchStudentAchievement {
   id: string;
+  number: string; // "01" through "08"
   name: string;
   role: string;
   organization: string;
   fullDesignation: string; // "Founder — Baidyanath Media Agency"
+  story: string;
+  storyHi?: string;
   batch: string; // e.g. "Batch 7"
   initials: string;
   avatarUrl?: string;

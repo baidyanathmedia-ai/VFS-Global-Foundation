@@ -736,91 +736,107 @@ export const SUCCESS_STORIES_DATA: SuccessStory[] = [
 export const BATCH_7_ACHIEVEMENTS_DATA: BatchStudentAchievement[] = [
   {
     id: "batch7-01",
+    number: "01",
     name: "Nitish SHA",
     role: "Founder",
     organization: "Baidyanath Media Agency",
     fullDesignation: "Founder — Baidyanath Media Agency",
+    story: "At VFS Global Academy, Nitish developed skills in professional communication, presentation, client interaction and business understanding. He later founded Baidyanath Media Agency, helping businesses grow through Digital Marketing, AI-powered solutions and Offline Marketing, with a focus on professional brand promotion, stronger visibility and business growth.",
     batch: "Batch 7",
     initials: "NS",
     avatarBg: "from-blue-600 to-indigo-700",
-    domain: "Media & Agency"
+    domain: "Digital & Offline Marketing"
   },
   {
     id: "batch7-02",
+    number: "02",
     name: "Sujeet Gupta",
     role: "Founder",
     organization: "Sakshi Trends",
     fullDesignation: "Founder — Sakshi Trends",
+    story: "Sujeet developed communication, customer interaction and professional presentation skills at VFS Global Academy. He used these skills to move towards entrepreneurship and is now the Founder of Sakshi Trends, building his own business venture.",
     batch: "Batch 7",
     initials: "SG",
     avatarBg: "from-emerald-600 to-teal-700",
-    domain: "Fashion & Retail"
+    domain: "Entrepreneurship & Retail"
   },
   {
     id: "batch7-03",
+    number: "03",
     name: "Abhimanyu Kumar",
     role: "Founder",
     organization: "Edu Care Jagat",
     fullDesignation: "Founder — Edu Care Jagat",
+    story: "Abhimanyu developed professional communication and people-interaction skills at VFS Global Academy. He later pursued his interest in education and founded Edu Care Jagat, focused on education, guidance and learning support for students.",
     batch: "Batch 7",
     initials: "AK",
     avatarBg: "from-amber-600 to-orange-700",
-    domain: "Education & Coaching"
+    domain: "Education & Guidance"
   },
   {
     id: "batch7-04",
+    number: "04",
     name: "Megha Sahi",
     role: "Mentor & Guide",
     organization: "DIA IAS Academy",
     fullDesignation: "Mentor & Guide — DIA IAS Academy",
+    story: "Megha developed communication, interpersonal and professional interaction skills at VFS Global Academy. She carried these skills into the field of mentoring and is now working as a Mentor & Guide at DIA IAS Academy, supporting students through guidance and learning.",
     batch: "Batch 7",
     initials: "MS",
     avatarBg: "from-purple-600 to-pink-700",
-    domain: "Civil Services Mentorship"
+    domain: "Mentoring & Education"
   },
   {
     id: "batch7-05",
+    number: "05",
     name: "Kaushal Singh",
     role: "English Speaking Member",
     organization: "US Consultation",
     fullDesignation: "English Speaking Member — US Consultation",
+    story: "Kaushal focused on English speaking, communication and professional conversation skills during his learning journey at VFS Global Academy. He developed greater confidence in professional communication and is now associated with US Consultation as an English Speaking Member.",
     batch: "Batch 7",
     initials: "KS",
     avatarBg: "from-cyan-600 to-blue-700",
-    domain: "Global Consultation"
+    domain: "Professional Communication"
   },
   {
     id: "batch7-06",
+    number: "06",
     name: "Aman Pathak",
     role: "Managing Director",
     organization: "Annapurna Sweets & Namkeen",
     fullDesignation: "Managing Director — Annapurna Sweets & Namkeen",
+    story: "Aman developed an understanding of hospitality, customer interaction and professional communication at VFS Global Academy. He carried these skills into business management and is now the Managing Director of Annapurna Sweets & Namkeen, handling business and management responsibilities.",
     batch: "Batch 7",
     initials: "AP",
     avatarBg: "from-rose-600 to-red-700",
-    domain: "Enterprise & Food Services"
+    domain: "Business & Hospitality Management"
   },
   {
     id: "batch7-07",
+    number: "07",
     name: "Kalyan Sharma",
     role: "Fire Safety Officer",
     organization: "AIIMS Deoghar",
     fullDesignation: "Fire Safety Officer — AIIMS Deoghar",
+    story: "Kalyan developed professional communication, workplace discipline and team interaction skills at VFS Global Academy. He continued his professional journey in the safety sector and is now working as a Fire Safety Officer at AIIMS Deoghar.",
     batch: "Batch 7",
     initials: "KS",
     avatarBg: "from-orange-600 to-amber-700",
-    domain: "Public Safety & Healthcare"
+    domain: "Safety & Healthcare Sector"
   },
   {
     id: "batch7-08",
+    number: "08",
     name: "Aman Roy",
     role: "Civil Engineer",
     organization: "Internship Completed at AIIMS Deoghar",
     fullDesignation: "Civil Engineer — Internship Completed at AIIMS Deoghar",
+    story: "Aman developed professional communication, workplace interaction and professional confidence at VFS Global Academy. He continued his journey in engineering, completed an internship at AIIMS Deoghar, and is pursuing his career as a Civil Engineer.",
     batch: "Batch 7",
     initials: "AR",
     avatarBg: "from-indigo-600 to-violet-700",
-    domain: "Civil Infrastructure"
+    domain: "Civil Engineering"
   }
 ];
 

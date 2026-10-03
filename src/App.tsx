@@ -11,7 +11,6 @@ import { GallerySection } from './components/GallerySection';
 import { LeadershipSection } from './components/LeadershipSection';
 import { TestimonialsSection } from './components/TestimonialsSection';
 import { BatchSevenAchievementsSection } from './components/BatchSevenAchievementsSection';
-import { VideoShowcaseSection } from './components/VideoShowcaseSection';
 import { NoticeBoard } from './components/NoticeBoard';
 import { ApplySection } from './components/ApplySection';
 import { CtaSection } from './components/CtaSection';
@@ -73,7 +72,6 @@ export default function App() {
         'leadership',
         'testimonials',
         'batch-7',
-        'video-showcase',
         'notices',
         'apply-now',
         'faqs',
@@ -236,27 +234,14 @@ export default function App() {
           <BatchSevenAchievementsSection onOpenApply={handleOpenApply} />
         </SectionReveal>
 
-        {/* Divider 10: Batch 7 to Video Showcase */}
+        {/* Divider 10: Batch 7 to Notice Board */}
         <SectionDivider
-          id="divider-batch7-videos"
-          variant="glow-line"
-          accent="blue"
-          className="bg-white dark:bg-slate-950"
-        />
-
-        {/* VIDEO WATCH SECTION: Facebook Reel 01 & Facebook Reel 02 */}
-        <SectionReveal>
-          <VideoShowcaseSection onOpenApply={handleOpenApply} />
-        </SectionReveal>
-
-        {/* Divider 11: Video Showcase to Notice Board */}
-        <SectionDivider
-          id="divider-videos-notices"
+          id="divider-batch7-notices"
           variant="badge-crest"
           accent="amber"
           icon={<Bell className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />}
           badgeText="Official Campus Notice Board"
-          className="bg-slate-900"
+          className="bg-slate-50 dark:bg-slate-900/60"
         />
 
         {/* 12. Dynamic Notice Board */}
